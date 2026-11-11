@@ -1,0 +1,281 @@
+{
+  "id": "workshop-registration",
+  "title": "Workshop registration form",
+  "prompt": "Create a registration form for a university engineering workshop. Ask for my name, email, experience level, and whether I want event updates.",
+  "text": "Here is a registration form for the engineering workshop.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "main",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "form"
+          },
+          {
+            "id": "form",
+            "component": "Column",
+            "children": [
+              "title",
+              "intro",
+              "name",
+              "email",
+              "level",
+              "updates",
+              "divider",
+              "preview",
+              "submit"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Engineering Workshop Registration"
+          },
+          {
+            "id": "intro",
+            "component": "Text",
+            "variant": "caption",
+            "text": "Reserve a seat for the hands-on session. It takes less than a minute."
+          },
+          {
+            "id": "name",
+            "component": "TextField",
+            "label": "Full name",
+            "placeholder": "Ada Lovelace",
+            "value": {
+              "@path": "/form/name"
+            }
+          },
+          {
+            "id": "email",
+            "component": "TextField",
+            "label": "Email",
+            "placeholder": "you@louisville.edu",
+            "value": {
+              "@path": "/form/email"
+            },
+            "checks": [
+              {
+                "condition": {
+                  "@call": "email",
+                  "args": {
+                    "value": {
+                      "@path": "/form/email"
+                    }
+                  }
+                },
+                "message": "Enter a valid email address."
+              }
+            ]
+          },
+          {
+            "id": "level",
+            "component": "ChoicePicker",
+            "label": "Experience level",
+            "variant": "mutuallyExclusive",
+            "displayStyle": "chips",
+            "value": {
+              "@path": "/form/level"
+            },
+            "options": [
+              {
+                "label": "Beginner",
+                "value": "Beginner"
+              },
+              {
+                "label": "Intermediate",
+                "value": "Intermediate"
+              },
+              {
+                "label": "Advanced",
+                "value": "Advanced"
+              }
+            ]
+          },
+          {
+            "id": "updates",
+            "component": "CheckBox",
+            "label": "Send me updates about this event",
+            "value": {
+              "@path": "/form/updates"
+            }
+          },
+          {
+            "id": "divider",
+            "component": "Divider"
+          },
+          {
+            "id": "preview",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "Registering as: ${/form/name} (${/form/level/0})"
+              }
+            }
+          },
+          {
+            "id": "submit",
+            "component": "Button",
+            "variant": "primary",
+            "child": "submit_label",
+            "action": {
+              "event": {
+                "name": "submit_registration",
+                "context": {
+                  "name": {
+                    "@path": "/form/name"
+                  },
+                  "email": {
+                    "@path": "/form/email"
+                  },
+                  "level": {
+                    "@path": "/form/level/0"
+                  },
+                  "updates": {
+                    "@path": "/form/updates"
+                  }
+                }
+              }
+            },
+            "checks": [
+              {
+                "condition": {
+                  "@call": "and",
+                  "args": {
+                    "values": [
+                      {
+                        "@call": "required",
+                        "args": {
+                          "value": {
+                            "@path": "/form/name"
+                          }
+                        }
+                      },
+                      {
+                        "@call": "email",
+                        "args": {
+                          "value": {
+                            "@path": "/form/email"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "message": "Enter your name and a valid email to register."
+              }
+            ]
+          },
+          {
+            "id": "submit_label",
+            "component": "Text",
+            "text": "Register"
+          }
+        ],
+        "dataModel": {
+          "form": {
+            "name": "",
+            "email": "",
+            "level": [
+              "Beginner"
+            ],
+            "updates": true
+          }
+        }
+      }
+    }
+  ],
+  "actions": {
+    "submit_registration": {
+      "text": "The registration was received, so here is a confirmation.",
+      "messages": [
+        {
+          "version": "1.0",
+          "createSurface": {
+            "surfaceId": "main",
+            "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+            "components": [
+              {
+                "id": "root",
+                "component": "Card",
+                "child": "body"
+              },
+              {
+                "id": "body",
+                "component": "Column",
+                "children": [
+                  "heading_row",
+                  "thanks",
+                  "divider",
+                  "level",
+                  "updates"
+                ]
+              },
+              {
+                "id": "heading_row",
+                "component": "Row",
+                "align": "center",
+                "children": [
+                  "check",
+                  "heading"
+                ]
+              },
+              {
+                "id": "check",
+                "component": "Icon",
+                "name": "check"
+              },
+              {
+                "id": "heading",
+                "component": "Text",
+                "text": "## You're registered"
+              },
+              {
+                "id": "thanks",
+                "component": "Text",
+                "text": {
+                  "@call": "formatString",
+                  "args": {
+                    "value": "Thanks, **${/action/name}**. A confirmation is on its way to ${/action/email}."
+                  }
+                }
+              },
+              {
+                "id": "divider",
+                "component": "Divider"
+              },
+              {
+                "id": "level",
+                "component": "Text",
+                "variant": "caption",
+                "text": {
+                  "@call": "formatString",
+                  "args": {
+                    "value": "Experience level: ${/action/level}"
+                  }
+                }
+              },
+              {
+                "id": "updates",
+                "component": "Text",
+                "variant": "caption",
+                "text": {
+                  "@call": "formatString",
+                  "args": {
+                    "value": "Event updates: ${/action/updates}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

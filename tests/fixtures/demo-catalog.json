@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.test/catalogs/demo/catalog.json",
+  "catalogId": "https://example.test/catalogs/demo/catalog.json",
+  "protocolVersion": "1.0",
+  "title": "Demo fixture catalog",
+  "description": "A two-component catalog used only by tests. It reuses a Basic Catalog name on purpose.",
+  "components": {
+    "Button": {
+      "type": "object",
+      "description": "A button that is not the Basic Catalog's Button: it takes a label, not a child.",
+      "properties": {
+        "component": { "const": "Button" },
+        "label": { "$ref": "common_types.json#/$defs/DynamicString" },
+        "action": { "$ref": "common_types.json#/$defs/Action" }
+      },
+      "required": ["component", "label", "action"]
+    },
+    "Panel": {
+      "type": "object",
+      "description": "A titled container.",
+      "properties": {
+        "component": { "const": "Panel" },
+        "title": { "$ref": "common_types.json#/$defs/DynamicString" },
+        "children": { "$ref": "common_types.json#/$defs/ChildList" }
+      },
+      "required": ["component", "title", "children"]
+    }
+  },
+  "functions": {
+    "shout": {
+      "type": "object",
+      "description": "Upper-cases a string.",
+      "returnType": "string",
+      "properties": {
+        "@call": { "const": "shout" },
+        "args": {
+          "type": "object",
+          "properties": { "value": { "$ref": "common_types.json#/$defs/DynamicString" } },
+          "required": ["value"],
+          "unevaluatedProperties": false
+        }
+      },
+      "required": ["@call", "args"]
+    }
+  }
+}

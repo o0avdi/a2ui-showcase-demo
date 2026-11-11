@@ -1,0 +1,57 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/*
+ * The look of generated A2UI content.
+ *
+ * The Basic Catalog's components are the SDK's Web Components. They are styled
+ * only through the CSS variables the SDK documents, set here from the app
+ * theme, so generated interfaces match the shell without touching the SDK.
+ */
+.a2ui-stage {
+  color-scheme: light;
+  font-family: var(--mui-font-body1-font-family, inherit);
+
+  --a2ui-color-primary: var(--mui-palette-primary-main);
+  --a2ui-color-on-primary: #fff;
+  --a2ui-color-background: transparent;
+  --a2ui-color-on-background: var(--mui-palette-text-primary);
+  --a2ui-color-surface: var(--mui-palette-background-paper);
+  --a2ui-color-on-surface: var(--mui-palette-text-primary);
+  --a2ui-color-secondary: #eef0f7;
+  --a2ui-color-on-secondary: var(--mui-palette-text-primary);
+  --a2ui-color-border: #d5dae6;
+  --a2ui-color-input: #fff;
+  --a2ui-color-on-input: var(--mui-palette-text-primary);
+  --a2ui-text-caption-color: var(--mui-palette-text-secondary);
+
+  --a2ui-border-radius: 10px;
+  --a2ui-grid-base: 0.75rem;
+  --a2ui-font-size: 0.9375rem;
+  --a2ui-font-scale: 1.18;
+  --a2ui-label-font-weight: 600;
+
+  --a2ui-card-padding: 28px;
+  --a2ui-card-margin: 0;
+  --a2ui-card-border-radius: 20px;
+  --a2ui-card-border: 1px solid var(--mui-palette-divider);
+  --a2ui-card-box-shadow: 0 1px 2px rgb(26 29 41 / 4%), 0 12px 32px -12px rgb(26 29 41 / 18%);
+
+  --a2ui-button-border-radius: 999px;
+  --a2ui-button-padding: 0.625rem 1.5rem;
+  --a2ui-button-margin: 0.25rem 0 0;
+  --a2ui-button-font-weight: 650;
+
+  --a2ui-textfield-border-radius: 10px;
+  --a2ui-textfield-padding: 0.625rem 0.75rem;
+  --a2ui-choicepicker-chip-border-radius: 999px;
+  --a2ui-icon-font-family: 'Material Symbols Outlined Variable';
+  --a2ui-icon-color: var(--mui-palette-secondary-main);
+}

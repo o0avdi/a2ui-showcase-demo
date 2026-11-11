@@ -1,0 +1,125 @@
+{
+  "id": "workshop-agenda",
+  "title": "Workshop agenda",
+  "prompt": "Show the agenda for a one-day engineering workshop as a list of sessions with times and rooms.",
+  "text": "Here is the workshop agenda, drawn from a list in the data model.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "main",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "body"
+          },
+          {
+            "id": "body",
+            "component": "Column",
+            "children": [
+              "title",
+              "subtitle",
+              "sessions"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## Workshop Agenda"
+          },
+          {
+            "id": "subtitle",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "${/day} · ${/location}"
+              }
+            }
+          },
+          {
+            "id": "sessions",
+            "component": "List",
+            "direction": "vertical",
+            "children": {
+              "path": "/sessions",
+              "componentId": "session"
+            }
+          },
+          {
+            "id": "session",
+            "component": "Row",
+            "align": "center",
+            "children": [
+              "session_time",
+              "session_detail"
+            ]
+          },
+          {
+            "id": "session_time",
+            "component": "Text",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "**${time}**"
+              }
+            }
+          },
+          {
+            "id": "session_detail",
+            "component": "Column",
+            "weight": 1,
+            "children": [
+              "session_title",
+              "session_room"
+            ]
+          },
+          {
+            "id": "session_title",
+            "component": "Text",
+            "text": {
+              "@path": "title"
+            }
+          },
+          {
+            "id": "session_room",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@path": "room"
+            }
+          }
+        ],
+        "dataModel": {
+          "day": "Friday, November 20",
+          "location": "Engineering Design & Innovation Showcase",
+          "sessions": [
+            {
+              "time": "9:00",
+              "title": "Welcome and overview",
+              "room": "Main hall"
+            },
+            {
+              "time": "9:30",
+              "title": "Agent-driven interfaces with A2UI",
+              "room": "Room 110"
+            },
+            {
+              "time": "11:00",
+              "title": "Hands-on: build a component catalog",
+              "room": "Lab 204"
+            },
+            {
+              "time": "1:30",
+              "title": "Project demos and judging",
+              "room": "Main hall"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

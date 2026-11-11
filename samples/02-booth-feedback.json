@@ -1,0 +1,156 @@
+{
+  "id": "booth-feedback",
+  "title": "Showcase booth feedback",
+  "prompt": "Build a short feedback survey for our showcase booth with a 1 to 5 rating, a comment box, and a submit button.",
+  "text": "Here is a short feedback survey for the booth.",
+  "messages": [
+    {
+      "version": "1.0",
+      "createSurface": {
+        "surfaceId": "main",
+        "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+        "components": [
+          {
+            "id": "root",
+            "component": "Card",
+            "child": "survey"
+          },
+          {
+            "id": "survey",
+            "component": "Column",
+            "children": [
+              "title",
+              "rating",
+              "rating_readout",
+              "comment",
+              "submit"
+            ]
+          },
+          {
+            "id": "title",
+            "component": "Text",
+            "text": "## How was the demo?"
+          },
+          {
+            "id": "rating",
+            "component": "Slider",
+            "label": "Overall rating",
+            "min": 1,
+            "max": 5,
+            "steps": 4,
+            "value": {
+              "@path": "/survey/rating"
+            }
+          },
+          {
+            "id": "rating_readout",
+            "component": "Text",
+            "variant": "caption",
+            "text": {
+              "@call": "formatString",
+              "args": {
+                "value": "You rated it ${/survey/rating} out of 5."
+              }
+            }
+          },
+          {
+            "id": "comment",
+            "component": "TextField",
+            "label": "What stood out?",
+            "variant": "longText",
+            "placeholder": "Optional",
+            "value": {
+              "@path": "/survey/comment"
+            }
+          },
+          {
+            "id": "submit",
+            "component": "Button",
+            "variant": "primary",
+            "child": "submit_label",
+            "action": {
+              "event": {
+                "name": "submit_feedback",
+                "context": {
+                  "rating": {
+                    "@path": "/survey/rating"
+                  },
+                  "comment": {
+                    "@path": "/survey/comment"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "submit_label",
+            "component": "Text",
+            "text": "Send feedback"
+          }
+        ],
+        "dataModel": {
+          "survey": {
+            "rating": 4,
+            "comment": ""
+          }
+        }
+      }
+    }
+  ],
+  "actions": {
+    "submit_feedback": {
+      "text": "The feedback was received, so here is a thank-you note.",
+      "messages": [
+        {
+          "version": "1.0",
+          "createSurface": {
+            "surfaceId": "main",
+            "catalogId": "https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json",
+            "components": [
+              {
+                "id": "root",
+                "component": "Card",
+                "child": "body"
+              },
+              {
+                "id": "body",
+                "component": "Column",
+                "children": [
+                  "heading",
+                  "rating",
+                  "comment"
+                ]
+              },
+              {
+                "id": "heading",
+                "component": "Text",
+                "text": "## Thanks for the feedback"
+              },
+              {
+                "id": "rating",
+                "component": "Text",
+                "text": {
+                  "@call": "formatString",
+                  "args": {
+                    "value": "You rated the demo **${/action/rating} out of 5**."
+                  }
+                }
+              },
+              {
+                "id": "comment",
+                "component": "Text",
+                "variant": "caption",
+                "text": {
+                  "@call": "formatString",
+                  "args": {
+                    "value": "Your comment: ${/action/comment}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
