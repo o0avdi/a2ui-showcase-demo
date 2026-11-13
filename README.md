@@ -32,7 +32,7 @@ below, and restart `npm run dev`.
 
 ```bash
 GEMINI_API_KEY=your-key          # https://aistudio.google.com/apikey
-GEMINI_MODEL=gemini-3.8-flash
+GEMINI_MODEL=gemini-4-hydrogen   # new release (was gemini 3.8 flash before)
 ```
 
 ### Local model (LM Studio, Ollama, or any OpenAI-compatible server)
