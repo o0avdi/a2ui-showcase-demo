@@ -102,7 +102,7 @@ function MessagesTab({ state }: { state: ShowcaseState }) {
               <Box
                 component="pre"
                 tabIndex={0}
-                sx={{ m: 0, p: 1.5, borderRadius: '8px', bgcolor: '#F7F8FC', fontFamily: fonts.mono, fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 320, overflow: 'auto' }}
+                sx={{ m: 0, p: 1.5, borderRadius: '8px', bgcolor: 'background.default', border: 1, borderColor: 'divider', fontFamily: fonts.mono, fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 320, overflow: 'auto' }}
               >
                 {attempt.rawOutput || '(empty)'}
               </Box>

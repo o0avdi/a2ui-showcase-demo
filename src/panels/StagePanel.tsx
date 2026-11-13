@@ -73,10 +73,10 @@ function pipelineSteps(state: ShowcaseState): Step[] {
 }
 
 const STEP_COLORS: Record<StepState, { bg: string; fg: string }> = {
-  idle: { bg: '#ECEEF5', fg: 'text.secondary' },
-  active: { bg: 'primary.main', fg: '#fff' },
-  done: { bg: 'secondary.main', fg: '#fff' },
-  error: { bg: 'error.main', fg: '#fff' },
+  idle: { bg: 'rgb(252 238 9 / 10%)', fg: '#FCEE09' },
+  active: { bg: '#FF003C', fg: '#FFFFFF' }, // Edgerunners Crimson
+  done: { bg: '#00F0FF', fg: '#000000' },   // Electric Cyan
+  error: { bg: '#FF6B00', fg: '#000000' },  // Blaze Orange
 };
 
 function Pipeline({ steps }: { steps: Step[] }) {
@@ -212,8 +212,11 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
           p: { xs: 2, md: 4 },
           borderTop: 1,
           borderColor: 'divider',
-          bgcolor: '#F7F8FC',
+          bgcolor: 'background.default',
           backgroundImage: 'radial-gradient(#D9DEEA 1px, transparent 1px)',
+          '[data-theme="dark"] &': {
+          backgroundImage: 'none',
+        },
           backgroundSize: '20px 20px',
         }}
       >

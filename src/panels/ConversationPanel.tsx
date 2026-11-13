@@ -133,7 +133,9 @@ function Entry({ entry }: { entry: ConversationEntry }) {
         px: 1.75,
         py: 1.25,
         borderRadius: '16px 16px 16px 4px',
-        bgcolor: '#F1F3F9',
+        bgcolor: 'background.default',
+        border: 1,
+        borderColor: 'divider',
       }}
     >
       <Chip
@@ -276,9 +278,15 @@ export function ConversationPanel({ state, onSubmit, onProviderChange, onReset }
             border: 1,
             borderColor: 'divider',
             borderRadius: '16px',
-            bgcolor: '#F7F8FC',
+            bgcolor: 'background.default',
             transition: 'border-color 120ms, box-shadow 120ms',
-            '&:focus-within': { borderColor: 'primary.main', boxShadow: '0 0 0 3px rgb(61 79 214 / 14%)' },
+            '&:focus-within': (theme) => ({
+              borderColor: 'primary.main',
+              boxShadow:
+                theme.palette.mode === 'dark'
+                  ? '0 0 0 3px rgb(189 147 249 / 25%)'
+                  : '0 0 0 3px rgb(61 79 214 / 14%)',
+            }),
           }}
         >
           <InputBase

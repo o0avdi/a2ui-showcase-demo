@@ -55,3 +55,33 @@ body {
   --a2ui-icon-font-family: 'Material Symbols Outlined Variable';
   --a2ui-icon-color: var(--mui-palette-secondary-main);
 }
+/* Dark Mode */
+[data-theme="dark"] body {
+  background-color: #000000;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .a2ui-stage {
+  color-scheme: dark;
+
+  /* Core Accents & Surfaces */
+  --a2ui-color-primary: #ff6b00;
+  --a2ui-color-on-primary: #000000;       /* High-contrast black text on yellow buttons */
+  --a2ui-color-background: #000000;
+  --a2ui-color-on-background: #f8fafc;
+  --a2ui-color-surface: #0a0b0e;
+  --a2ui-color-on-surface: #f8fafc;
+
+  /* Secondary, Borders & Inputs */
+  --a2ui-color-secondary: #14161d;
+  --a2ui-color-on-secondary: #00f0ff;     /* Electric Cyan inactive chips & secondary accents */
+  --a2ui-color-border: rgb(252 238 9 / 28%);
+  --a2ui-color-input: #050608;
+  --a2ui-color-on-input: #f8fafc;
+  --a2ui-text-caption-color: #8e95a5;
+
+  /* Card Border & Shadow */
+  --a2ui-card-border: 1px solid rgb(147 51 234 / 60%);
+  --a2ui-card-box-shadow: 0 0 0 1px rgb(124 58 237 / 20%), 0 16px 40px -12px rgb(147 51 234 / 30%);
+  --a2ui-icon-color: #00f0ff;
+}

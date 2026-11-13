@@ -6,7 +6,11 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import DarkModeRounded from '@mui/icons-material/DarkModeRounded';
+import LightModeRounded from '@mui/icons-material/LightModeRounded';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { useColorScheme, useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 
 import { registry } from '../a2ui/registry.ts';
@@ -21,7 +25,7 @@ function Mark() {
   return (
     <Box
       aria-hidden
-      sx={{ width: 30, height: 30, borderRadius: '9px', bgcolor: 'primary.main', display: 'grid', placeItems: 'center' }}
+      sx={{ width: 30, height: 30, borderRadius: '9px', bgcolor: '#3D4FD6', display: 'grid', placeItems: 'center' }}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="6" height="6" rx="1.5" fill="#fff" />
@@ -35,6 +39,8 @@ function Mark() {
 export function App() {
   const { showcase, state } = useShowcase();
   const theme = useTheme();
+  const { mode, setMode } = useColorScheme();
+  const isDark= mode == 'dark';
   const wide = useMediaQuery(theme.breakpoints.up('lg'));
   const narrow = useMediaQuery(theme.breakpoints.down('md'));
   const [view, setView] = useState<View>('conversation');
@@ -66,6 +72,16 @@ export function App() {
         <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', md: 'block' } }}>
           University of Louisville capstone demo. Not an official Google product.
         </Typography>
+        <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          <IconButton
+            size="small"
+            onClick={() => setMode(isDark ? 'light' : 'dark')}
+            aria-label="Toggle color theme"
+            sx={{ border: 1, borderColor: 'divider', bgcolor: 'background.paper' }}
+          >
+            {isDark ? <LightModeRounded fontSize="small" /> : <DarkModeRounded fontSize="small" />}
+          </IconButton>
+        </Tooltip>
         {!wide && !narrow && (
           <Button size="small" variant="outlined" startIcon={<TuneRounded />} onClick={() => setInspectorOpen(true)}>
             Inspector
