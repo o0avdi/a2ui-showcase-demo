@@ -183,6 +183,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
   const { active, busy } = state;
   const surfaces = active?.rendered.surfaces ?? [];
   const sample = active?.response.source === 'sample';
+  const budget = sample && surfaces.some((surface) => surface.id === 'november-budget');
 
   return (
     <Panel
@@ -191,7 +192,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
         active && (
           <Chip
             size="small"
-            label={sample ? 'Prerecorded sample, not generated live' : `Generated live by ${active.response.model}`}
+            label={budget ? 'Interactive sample' : sample ? 'Prerecorded sample, not generated live' : `Generated live by ${active.response.model}`}
             sx={{
               bgcolor: sample ? 'warning.light' : 'secondary.light',
               color: sample ? 'warning.main' : 'secondary.main',
@@ -226,7 +227,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
           <Box
             sx={{
               width: '100%',
-              maxWidth: 560,
+              maxWidth: budget ? 840 : 560,
               opacity: busy ? 0.55 : 1,
               pointerEvents: busy ? 'none' : 'auto',
               transition: 'opacity 200ms',

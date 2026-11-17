@@ -262,3 +262,34 @@ describe('request validation', () => {
     expect(parseTurnRequest(body, providers)).toMatch(reason);
   });
 });
+
+describe('November budget sample', () => {
+  const agent = agentWith(new ScriptedProvider([]));
+
+  it.each([
+    ['select_category', { category: 'dining_out' }, 'Showing sample transactions for Dining out.', 'transaction_0'],
+    ['edit_amounts', { fundBalance: 3000, expenseCost: 1200 }, 'Enter your balance and estimated repair cost.', 'fund_input'],
+    ['check_coverage', { fundBalance: '3000', expenseCost: '1200' }, '$1,800 left in your emergency fund after the repair.', 'result'],
+    ['check_coverage', { fundBalance: '900', expenseCost: '1200' }, '$300 short of covering the repair.', 'result'],
+    ['check_coverage', { fundBalance: '', expenseCost: '1200' }, 'Enter two valid nonnegative dollar amounts.', 'input_error'],
+  ] as const)('validates the %s response for %j', async (name, context, text, componentId) => {
+    const sample = samples.find(({ id }) => id === 'november-budget')!;
+    const result = await agent.runTurn({
+      provider: 'sample',
+      capabilities,
+      input: {
+        kind: 'action',
+        action: { name, context, surfaceId: 'november-budget', sourceComponentId: 'check', timestamp: '2026-11-16T00:00:00Z' },
+        prior: { prompt: sample.prompt, sampleId: sample.id, messages: sample.messages },
+      },
+    });
+    expect(result).toMatchObject({ ok: true, text });
+    if (result.ok) {
+      expect(result.messages).toContainEqual(expect.objectContaining({
+        createSurface: expect.objectContaining({
+          components: expect.arrayContaining([expect.objectContaining({ id: componentId })]),
+        }),
+      }));
+    }
+  });
+});

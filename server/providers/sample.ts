@@ -10,6 +10,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { ProviderStatus, SampleSummary } from '../../shared/contract.ts';
+import { budgetReply, budgetSample } from './budget-sample.ts';
 import { ProviderError, type GenerateRequest, type GenerateResult, type ModelProvider } from './types.ts';
 
 interface SampleReply {
@@ -26,10 +27,11 @@ export interface Sample extends SampleReply, SampleSummary {
 const ACTION_CONTEXT_PATH = '/action';
 
 export function loadSamples(directory: string): Sample[] {
-  return readdirSync(directory)
+  const recorded = readdirSync(directory)
     .filter((file) => file.endsWith('.json'))
     .sort()
     .map((file) => JSON.parse(readFileSync(join(directory, file), 'utf8')) as Sample);
+  return [...recorded, budgetSample];
 }
 
 const asResponseText = (reply: SampleReply, messages = reply.messages) =>
@@ -54,7 +56,7 @@ export class SampleProvider implements ModelProvider {
       source: this.source,
       available: this.samples.length > 0,
       format: this.format,
-      detail: `${this.samples.length} prerecorded interfaces. No model is called.`,
+      detail: `${this.samples.length} sample interfaces. No model is called.`,
     };
   }
 
@@ -73,6 +75,10 @@ export class SampleProvider implements ModelProvider {
     }
 
     const { action, prior } = input;
+    if (prior.sampleId === budgetSample.id && this.samples.includes(budgetSample)
+      && ['select_category', 'edit_amounts', 'check_coverage', 'show_emergency_fund'].includes(action.name)) {
+      return { text: asResponseText(budgetReply(action)), model };
+    }
     const reply = this.samples.find((sample) => sample.id === prior.sampleId)?.actions?.[action.name];
     if (!reply) {
       throw new ProviderError(
