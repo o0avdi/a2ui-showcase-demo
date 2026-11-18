@@ -8,6 +8,20 @@
  * the protocol.
  */
 
+import type { BudgetContext } from './budget.ts';
+export {
+  calculateCoverage,
+  createInitialBudgetContext,
+  formatMoney,
+  INITIAL_BUDGET_CATEGORIES,
+  INITIAL_SCENARIO,
+  parseDollarAmount,
+  type BudgetCategory,
+  type BudgetContext,
+  type BudgetScenario,
+  type CoverageResult,
+} from './budget.ts';
+
 export type ProviderId = 'gemini' | 'local' | 'sample';
 
 /**
@@ -71,6 +85,8 @@ export interface TurnRequest {
   input: TurnInput;
   /** `MessageProcessor.getRendererCapabilities({ versions: ['1.0'] })`. */
   capabilities: unknown;
+  /** Current client-side budget state and active emergency-fund scenario. */
+  budgetContext?: BudgetContext;
 }
 
 export interface ValidationIssue {
