@@ -14,8 +14,13 @@ import {
   type GenerateResult,
   type ModelProvider,
 } from '../../server/providers/types.ts';
-import type { InferenceFormat, TurnRequest } from '../../shared/contract.ts';
-
+import {
+  calculateCoverage,
+  createInitialBudgetContext,
+  parseDollarAmount,
+  type InferenceFormat,
+  type TurnRequest,
+} from '../../shared/contract.ts';
 const root = join(import.meta.dirname, '..', '..');
 const catalogs = loadCatalogConfigs(join(root, 'catalogs'));
 const samples = loadSamples(join(root, 'samples'));
@@ -291,5 +296,60 @@ describe('November budget sample', () => {
         }),
       }));
     }
+  });
+});
+
+describe('budget coverage math and Gemini budgetContext', () => {
+  it('computes remaining balance, shortfall, and exact-match coverage', () => {
+    expect(calculateCoverage(3000, 1200)).toMatchObject({
+      covered: true,
+      remaining: 1800,
+      shortfall: 0,
+      summary: '$1,800 left in your emergency fund after the repair.',
+    });
+    expect(calculateCoverage(900, 1200)).toMatchObject({
+      covered: false,
+      remaining: 0,
+      shortfall: 300,
+      summary: '$300 short of covering the repair.',
+    });
+    expect(calculateCoverage(1200, 1200)).toMatchObject({
+      covered: true,
+      remaining: 0,
+      shortfall: 0,
+    });
+  });
+
+  it('validates dollar amounts and falls back on invalid inputs', () => {
+    expect(parseDollarAmount('900.50', 0)).toBe(900.5);
+    expect(parseDollarAmount('-50', 3000)).toBe(3000);
+    expect(parseDollarAmount('abc', 1200)).toBe(1200);
+  });
+
+  it('preserves budgetContext in parseTurnRequest and injects live values into model prompts', async () => {
+    const budgetContext = createInitialBudgetContext();
+    budgetContext.scenario = { fundBalance: 900, expenseCost: 1200 };
+
+    const rawRequest = {
+      provider: 'gemini',
+      input: { kind: 'prompt', text: 'What if the car repair costs $500 more?' },
+      capabilities,
+      budgetContext,
+    };
+
+    const parsed = parseTurnRequest(rawRequest, { gemini: {}, local: {}, sample: {} } as unknown as Providers);
+    expect(typeof parsed).toBe('object');
+    if (typeof parsed === 'string') return;
+    expect(parsed.budgetContext?.scenario).toEqual({ fundBalance: 900, expenseCost: 1200 });
+
+    const provider = new ScriptedProvider([tagged(VALID)]);
+    const result = await agentWith(provider).runTurn(parsed);
+
+    expect(result.ok).toBe(true);
+    const promptSent = provider.requests[0]!.messages[0]!.text;
+    expect(promptSent).toContain('balance = $900');
+    expect(promptSent).toContain('repair cost = $1,200');
+    expect(promptSent).toContain('$300 short of covering the repair.');
+    expect(promptSent).toContain('What if the car repair costs $500 more?');
   });
 });
