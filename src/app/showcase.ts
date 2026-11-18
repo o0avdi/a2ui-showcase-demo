@@ -129,16 +129,20 @@ export class Showcase {
   submitPrompt(text: string, sampleId?: string): void {
     const prompt = text.trim();
     if (!prompt || this.state.busy) return;
+    const activeSampleId = sampleId ?? this.state.active?.prior.sampleId;
     const isBudgetTurn =
       this.state.budgetActive ||
-      sampleId === 'november-budget' ||
+      activeSampleId === 'november-budget' ||
       /\b(budget|emergency fund|car repair)\b/i.test(prompt);
     if (isBudgetTurn && !this.state.budgetActive) {
       this.update({ budgetActive: true });
     }
     this.say({ kind: 'user', text: prompt });
     this.log('prompt', 'Prompt sent', { prompt, provider: this.state.provider });
-    void this.run({ kind: 'prompt', text: prompt, ...(sampleId ? { sampleId } : {}) }, { prompt, sampleId });
+    void this.run(
+      { kind: 'prompt', text: prompt, ...(activeSampleId ? { sampleId: activeSampleId } : {}) },
+      { prompt, sampleId: activeSampleId },
+    );
   }
 
   /** Clears the conversation and the stage. Provider and status are kept. */

@@ -37,6 +37,26 @@ export function loadSamples(directory: string): Sample[] {
 const asResponseText = (reply: SampleReply, messages = reply.messages) =>
   `${reply.text}\n<a2ui-json>${JSON.stringify(messages)}</a2ui-json>`;
 
+function parseBudgetPromptUpdate(text: string, current?: { fundBalance: number; expenseCost: number }) {
+  const numbers = [...text.matchAll(/\$?\s*(\d[\d,]*(?:\.\d+)?)/g)].map((m) => Number(m[1].replace(/,/g, '')));
+  if (numbers.length === 0) return null;
+
+  let fundBalance = current?.fundBalance ?? 3000;
+  let expenseCost = current?.expenseCost ?? 1200;
+
+  if (/\b(repair|cost|expense|car)\b/i.test(text) && !/\b(emergency|fund|balance)\b/i.test(text)) {
+    expenseCost = numbers[0];
+  } else if (/\b(emergency|fund|balance)\b/i.test(text) && !/\b(repair|cost|expense|car)\b/i.test(text)) {
+    fundBalance = numbers[0];
+  } else if (numbers.length >= 2) {
+    [fundBalance, expenseCost] = numbers;
+  } else {
+    fundBalance = numbers[0];
+  }
+
+  return budgetReply({ name: 'check_coverage', context: { fundBalance, expenseCost } });
+}
+
 export class SampleProvider implements ModelProvider {
   readonly id = 'sample';
   readonly source = 'sample';
@@ -60,23 +80,35 @@ export class SampleProvider implements ModelProvider {
     };
   }
 
-  async generate({ input }: GenerateRequest): Promise<GenerateResult> {
+  async generate({ input, budgetContext }: GenerateRequest): Promise<GenerateResult> {
     const model = 'prerecorded';
     if (input.kind === 'prompt') {
-      const recorded =
-        this.samples.find((sample) => sample.id === input.sampleId) ??
-        this.samples.find((sample) => sample.prompt === input.text);
-      const sample = recorded ?? this.samples[0];
+      const exactMatch = this.samples.find((sample) => sample.prompt === input.text);
+      const activeSample = this.samples.find((sample) => sample.id === input.sampleId);
+      const sample = exactMatch ?? activeSample ?? this.samples[0];
       if (!sample) throw new ProviderError('provider_unavailable', 'No sample files were found.');
-      if (recorded) return { text: asResponseText(sample), model };
-      // Never let a recording pass as an answer to a prompt it was not made for.
-      const text = `Sample mode cannot generate from a new prompt, so this is the prerecorded "${sample.title}". Choose a model to generate from your own words.`;
+
+      if (exactMatch || (activeSample && input.text === activeSample.prompt)) {
+        return { text: asResponseText(sample), model };
+      }
+
+      if (sample.id === budgetSample.id && this.samples.includes(budgetSample)) {
+        const updated = parseBudgetPromptUpdate(input.text, budgetContext?.scenario);
+        if (updated) return { text: asResponseText(updated), model };
+      }
+
+      // Never let a recording pass as an answer to a prompt it was not made for,
+      // while keeping the currently active sample on stage instead of overwriting it.
+      const text = `Sample mode cannot generate from a new prompt, so this stays on "${sample.title}". Use the buttons on stage or choose a model to generate from your own words.`;
       return { text: asResponseText({ ...sample, text }), model };
     }
 
     const { action, prior } = input;
-    if (prior.sampleId === budgetSample.id && this.samples.includes(budgetSample)
-      && ['select_category', 'edit_amounts', 'check_coverage', 'show_emergency_fund'].includes(action.name)) {
+    if (
+      prior.sampleId === budgetSample.id &&
+      this.samples.includes(budgetSample) &&
+      ['select_category', 'edit_amounts', 'check_coverage', 'show_emergency_fund'].includes(action.name)
+    ) {
       return { text: asResponseText(budgetReply(action)), model };
     }
     const reply = this.samples.find((sample) => sample.id === prior.sampleId)?.actions?.[action.name];
@@ -86,8 +118,6 @@ export class SampleProvider implements ModelProvider {
         `Sample mode has no prerecorded reply to the "${action.name}" action. Connect a model to answer it.`,
       );
     }
-    // The one thing a recording cannot contain is what this user typed, so the
-    // action's context is handed to the reply's data model for it to bind to.
     const surfaceId = reply.messages.find((message) => message.createSurface)?.createSurface.surfaceId;
     const withContext = [
       ...reply.messages,
