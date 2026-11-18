@@ -9,17 +9,21 @@
  * sees current state.
  */
 
-import type {
-  A2uiAction,
-  PriorTurn,
-  ProviderId,
-  StatusResponse,
-  TurnFailure,
-  TurnInput,
-  TurnRequest,
-  TurnResponse,
-  TurnSuccess,
-  ValidationIssue,
+import {
+  calculateCoverage,
+  createInitialBudgetContext,
+  parseDollarAmount,
+  type A2uiAction,
+  type BudgetContext,
+  type PriorTurn,
+  type ProviderId,
+  type StatusResponse,
+  type TurnFailure,
+  type TurnInput,
+  type TurnRequest,
+  type TurnResponse,
+  type TurnSuccess,
+  type ValidationIssue,
 } from '../../shared/contract.ts';
 import type { LoadedCatalog } from '../a2ui/catalogs.ts';
 import { dataModelOf, rendererCapabilities, renderTurn, type RenderedTurn } from '../a2ui/renderer.ts';
@@ -55,6 +59,8 @@ export interface ShowcaseState {
   provider: ProviderId;
   /** What the server is working on, if anything. */
   busy: false | 'prompt' | 'action';
+  budgetActive: boolean;
+  budget: BudgetContext;
   conversation: ConversationEntry[];
   events: LogEvent[];
   active: ActiveTurn | null;
@@ -77,6 +83,8 @@ const INITIAL: ShowcaseState = {
   statusError: '',
   provider: 'sample',
   busy: false,
+  budget: createInitialBudgetContext(),
+  budgetActive: false,
   conversation: [],
   events: [],
   active: null,
@@ -106,8 +114,6 @@ export class Showcase {
   async loadStatus(): Promise<void> {
     try {
       const status = await this.deps.fetchStatus();
-      // Keep a choice the user already made. Otherwise start on the server's
-      // default, or in sample mode when that default cannot be used right now.
       const usable = status.providers.some((entry) => entry.id === status.defaultProvider && entry.available);
       const provider = this.state.status ? this.state.provider : usable ? status.defaultProvider : 'sample';
       this.update({ status, statusError: '', provider });
@@ -123,6 +129,13 @@ export class Showcase {
   submitPrompt(text: string, sampleId?: string): void {
     const prompt = text.trim();
     if (!prompt || this.state.busy) return;
+    const isBudgetTurn =
+      this.state.budgetActive ||
+      sampleId === 'november-budget' ||
+      /\b(budget|emergency fund|car repair)\b/i.test(prompt);
+    if (isBudgetTurn && !this.state.budgetActive) {
+      this.update({ budgetActive: true });
+    }
     this.say({ kind: 'user', text: prompt });
     this.log('prompt', 'Prompt sent', { prompt, provider: this.state.provider });
     void this.run({ kind: 'prompt', text: prompt, ...(sampleId ? { sampleId } : {}) }, { prompt, sampleId });
@@ -132,7 +145,14 @@ export class Showcase {
   reset(): void {
     if (this.state.busy) return;
     this.stage(null);
-    this.update({ conversation: [], events: [], lastResponse: null, rendererIssues: [] });
+    this.update({
+      conversation: [],
+      events: [],
+      lastResponse: null,
+      rendererIssues: [],
+      budget: createInitialBudgetContext(),
+      budgetActive: false,
+    });
   }
 
   dispose(): void {
@@ -145,6 +165,25 @@ export class Showcase {
     this.log('action', `Action "${action.name}" from ${action.sourceComponentId}`, action);
     const { active, busy } = this.state;
     if (!active || busy) return;
+
+    const fundBalance = parseDollarAmount(action.context.fundBalance, this.state.budget.scenario.fundBalance);
+    const expenseCost = parseDollarAmount(action.context.expenseCost, this.state.budget.scenario.expenseCost);
+    const selectedCategoryId =
+      action.name === 'select_category' && typeof action.context.category === 'string'
+        ? action.context.category
+        : action.name === 'show_emergency_fund'
+          ? undefined
+          : this.state.budget.selectedCategoryId;
+
+    this.update({
+      budget: {
+        ...this.state.budget,
+        scenario: { fundBalance, expenseCost },
+        coverage: calculateCoverage(fundBalance, expenseCost),
+        selectedCategoryId,
+      },
+    });
+
     this.say({ kind: 'action', action });
     void this.run({ kind: 'action', action, prior: active.prior }, active.prior);
   }
@@ -155,6 +194,7 @@ export class Showcase {
       provider: this.state.provider,
       input,
       capabilities: this.capabilities,
+      ...(this.state.budgetActive ? { budgetContext: this.state.budget } : {}),
     });
 
     if (!response.ok) {
@@ -178,7 +218,6 @@ export class Showcase {
     for (const issue of rendered.issues) this.log('error', `Renderer rejected a message: ${issue.message}`, issue);
 
     if (rendered.issues.length > 0) {
-      // The stage keeps what it had; a half-applied turn is never shown.
       rendered.processor.dispose();
       this.update({ busy: false, lastResponse: response, rendererIssues: rendered.issues });
       return;
@@ -195,7 +234,23 @@ export class Showcase {
 
     const surface = next?.rendered.surfaces[0];
     if (surface) {
-      const subscription = surface.dataModel.subscribe('/', () => this.update({ dataModel: dataModelOf(surface) }));
+      const syncFromModel = () => {
+        const model = dataModelOf(surface);
+        this.update({ dataModel: model });
+        const scenario = (model as { scenario?: Record<string, unknown> })?.scenario;
+        if (scenario) {
+          const fundBalance = parseDollarAmount(scenario.fundBalance, this.state.budget.scenario.fundBalance);
+          const expenseCost = parseDollarAmount(scenario.expenseCost, this.state.budget.scenario.expenseCost);
+          this.update({
+            budget: {
+              ...this.state.budget,
+              scenario: { fundBalance, expenseCost },
+              coverage: calculateCoverage(fundBalance, expenseCost),
+            },
+          });
+        }
+      };
+      const subscription = surface.dataModel.subscribe('/', syncFromModel);
       this.stopWatchingData = () => subscription.unsubscribe();
     }
     this.update({ active: next, dataModel: surface ? dataModelOf(surface) : {} });
