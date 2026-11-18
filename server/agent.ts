@@ -10,6 +10,7 @@
 
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { buildRetryMessage, buildSystemPrompt, describeAction, describeBudgetContext } from './prompt.ts';
 
 import {
   A2uiCatalogError,
@@ -34,7 +35,6 @@ import type {
   TurnResponse,
   ValidationIssue,
 } from '../shared/contract.ts';
-import { buildRetryMessage, buildSystemPrompt, describeAction } from './prompt.ts';
 import type { Providers } from './providers/index.ts';
 import { ProviderError, type ChatMessage, type ModelProvider } from './providers/types.ts';
 
@@ -92,14 +92,21 @@ function issuesOf(error: A2uiError): ValidationIssue[] {
  * The conversation a provider is sent. An action is answered in the context of
  * the turn that drew its surface, replayed in the format the model writes.
  */
-function conversationFor(input: TurnInput, processor: A2uiRequestProcessor): ChatMessage[] {
-  if (input.kind === 'prompt') return [{ role: 'user', text: input.text }];
+function conversationFor(
+  input: TurnInput,
+  processor: A2uiRequestProcessor,
+  budgetContext?: TurnRequest['budgetContext'],
+): ChatMessage[] {
+  const budgetNote = describeBudgetContext(budgetContext);
+  const withBudget = (text: string): string => (budgetNote ? `${budgetNote}\n\n${text}` : text);
+
+  if (input.kind === 'prompt') return [{ role: 'user', text: withBudget(input.text) }];
   const { parser } = processor;
   const earlier = parser.decompile(input.prior.messages as Parameters<typeof parser.decompile>[0]);
   return [
     { role: 'user', text: input.prior.prompt },
     { role: 'model', text: parser.wrap([{ type: 'a2ui', a2uiRaw: earlier, isFinal: true }]) },
-    { role: 'user', text: describeAction(input.action) },
+    { role: 'user', text: withBudget(describeAction(input.action)) },
   ];
 }
 
@@ -145,7 +152,7 @@ export class Agent {
     const system = buildSystemPrompt(processor.promptSnippet, provider.jsonMode);
     let messages: ChatMessage[];
     try {
-      messages = conversationFor(request.input, processor);
+      messages = conversationFor(request.input, processor, request.budgetContext);
     } catch (error) {
       if (!(error instanceof A2uiError)) throw error;
       return fail('bad_request', `The surface this action came from is not valid A2UI: ${error.message}`);

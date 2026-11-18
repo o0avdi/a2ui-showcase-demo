@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import express, { type ErrorRequestHandler, type Express } from 'express';
 
-import type { ProviderId, StatusResponse, TurnInput, TurnRequest } from '../shared/contract.ts';
+import type { BudgetContext, ProviderId, StatusResponse, TurnInput, TurnRequest } from '../shared/contract.ts';
 import type { Agent } from './agent.ts';
 import type { Providers } from './providers/index.ts';
 import type { SampleProvider } from './providers/sample.ts';
@@ -52,6 +52,13 @@ export function parseTurnRequest(body: unknown, providers: Providers): TurnReque
   } else {
     return 'The input kind must be "prompt" or "action".';
   }
+  const budgetContext = isRecord(body.budgetContext) ? (body.budgetContext as unknown as BudgetContext) : undefined;
+  return {
+    provider: provider as ProviderId,
+    input: input as TurnInput,
+    capabilities,
+    ...(budgetContext ? { budgetContext } : {}),
+  };
   return { provider: provider as ProviderId, input: input as TurnInput, capabilities };
 }
 
