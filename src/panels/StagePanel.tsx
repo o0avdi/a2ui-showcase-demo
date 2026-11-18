@@ -216,8 +216,13 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
           bgcolor: 'background.default',
           backgroundImage: 'radial-gradient(#D9DEEA 1px, transparent 1px)',
           '[data-theme="dark"] &': {
-          backgroundImage: 'none',
-        },
+            backgroundColor: '#030207',
+            backgroundImage: [
+              'radial-gradient(ellipse 75% 55% at 50% 0%, rgb(109 40 217 / 24%), transparent 70%)',
+              'radial-gradient(rgb(136 19 55 / 32%) 1px, transparent 1px)',
+            ].join(', '),
+            backgroundSize: '100% 100%, 22px 22px',
+          },
           backgroundSize: '20px 20px',
         }}
       >
