@@ -7,7 +7,7 @@
  * they hold for every inference format.
  */
 
-import type { A2uiAction } from '../shared/contract.ts';
+import { calculateCoverage, formatMoney, type A2uiAction, type BudgetContext } from '../shared/contract.ts';
 
 const ROLE = `You are the interface agent of an interactive showcase. You answer every request by composing a user interface from the component catalog below, sent as A2UI. The interface is your answer.
 
@@ -40,4 +40,24 @@ export function buildRetryMessage(error: string): string {
   return `Your previous reply was rejected by the A2UI validator: ${error}
 
 Send the complete corrected reply in the required output format, using only what the catalog defines.`;
+}
+
+export function describeBudgetContext(budget?: BudgetContext): string {
+  if (!budget) return '';
+  const totalBudget = budget.categories.reduce((sum, c) => sum + c.budget, 0);
+  const totalSpent = budget.categories.reduce((sum, c) => sum + c.spent, 0);
+  const coverage = calculateCoverage(budget.scenario.fundBalance, budget.scenario.expenseCost);
+
+  const lines = [
+    'Current November budget state in the user interface (always use these live edited numbers when answering finance or budget questions):',
+    `- Totals: ${formatMoney(totalSpent)} spent of ${formatMoney(totalBudget)} planned (${formatMoney(totalBudget - totalSpent)} remaining)`,
+    '- Categories:',
+    ...budget.categories.map(
+      (c) =>
+        `  * ${c.name} (${c.id}): ${formatMoney(c.spent)} spent / ${formatMoney(c.budget)} budget (${formatMoney(Math.abs(c.budget - c.spent))} ${c.spent > c.budget ? 'over' : 'left'}); transactions: ${c.transactions.join(', ')}`,
+    ),
+    `- Active emergency fund scenario: balance = ${formatMoney(coverage.fundBalance)}, repair cost = ${formatMoney(coverage.expenseCost)} -> ${coverage.summary}`,
+    'If the user asks a "what if" follow-up (e.g., changing repair cost or balance), compute the new coverage (balance - cost) and render an updated A2UI summary card showing the balance, repair cost, and remaining balance or shortfall.',
+  ];
+  return lines.join('\n');
 }

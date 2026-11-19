@@ -183,6 +183,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
   const { active, busy } = state;
   const surfaces = active?.rendered.surfaces ?? [];
   const sample = active?.response.source === 'sample';
+  const budget = sample && surfaces.some((surface) => surface.id === 'november-budget');
 
   return (
     <Panel
@@ -191,7 +192,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
         active && (
           <Chip
             size="small"
-            label={sample ? 'Prerecorded sample, not generated live' : `Generated live by ${active.response.model}`}
+            label={budget ? 'Interactive sample' : sample ? 'Prerecorded sample, not generated live' : `Generated live by ${active.response.model}`}
             sx={{
               bgcolor: sample ? 'warning.light' : 'secondary.light',
               color: sample ? 'warning.main' : 'secondary.main',
@@ -215,8 +216,13 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
           bgcolor: 'background.default',
           backgroundImage: 'radial-gradient(#D9DEEA 1px, transparent 1px)',
           '[data-theme="dark"] &': {
-          backgroundImage: 'none',
-        },
+            backgroundColor: '#030207',
+            backgroundImage: [
+              'radial-gradient(ellipse 75% 55% at 50% 0%, rgb(109 40 217 / 24%), transparent 70%)',
+              'radial-gradient(rgb(136 19 55 / 32%) 1px, transparent 1px)',
+            ].join(', '),
+            backgroundSize: '100% 100%, 22px 22px',
+          },
           backgroundSize: '20px 20px',
         }}
       >
@@ -226,7 +232,7 @@ export function StagePanel({ state }: { state: ShowcaseState }) {
           <Box
             sx={{
               width: '100%',
-              maxWidth: 560,
+              maxWidth: budget ? 840 : 560,
               opacity: busy ? 0.55 : 1,
               pointerEvents: busy ? 'none' : 'auto',
               transition: 'opacity 200ms',

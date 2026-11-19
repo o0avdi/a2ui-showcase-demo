@@ -64,24 +64,38 @@ body {
 [data-theme="dark"] .a2ui-stage {
   color-scheme: dark;
 
-  /* Core Accents & Surfaces */
-  --a2ui-color-primary: #ff6b00;
-  --a2ui-color-on-primary: #000000;       /* High-contrast black text on yellow buttons */
+  --a2ui-color-primary: #5b21b6;
+  --a2ui-color-on-primary: #f8fafc;
   --a2ui-color-background: #000000;
   --a2ui-color-on-background: #f8fafc;
-  --a2ui-color-surface: #0a0b0e;
+  --a2ui-color-surface: #0a0912;
   --a2ui-color-on-surface: #f8fafc;
 
-  /* Secondary, Borders & Inputs */
-  --a2ui-color-secondary: #14161d;
-  --a2ui-color-on-secondary: #00f0ff;     /* Electric Cyan inactive chips & secondary accents */
-  --a2ui-color-border: rgb(252 238 9 / 28%);
-  --a2ui-color-input: #050608;
+  --a2ui-color-secondary: #161129;
+  --a2ui-color-on-secondary: #e2e8f0;
+  --a2ui-color-border: rgb(109 40 217 / 55%);
+  --a2ui-color-input: #06050b;
   --a2ui-color-on-input: #f8fafc;
-  --a2ui-text-caption-color: #8e95a5;
+  --a2ui-text-caption-color: #94a3b8;
 
-  /* Card Border & Shadow */
-  --a2ui-card-border: 1px solid rgb(147 51 234 / 60%);
-  --a2ui-card-box-shadow: 0 0 0 1px rgb(124 58 237 / 20%), 0 16px 40px -12px rgb(147 51 234 / 30%);
-  --a2ui-icon-color: #00f0ff;
+  --a2ui-card-border: 1px solid rgb(124 58 237 / 65%);
+  --a2ui-card-box-shadow:
+    0 0 0 1px rgb(139 92 246 / 20%),
+    0 16px 40px -12px rgb(109 40 217 / 42%);
+  --a2ui-icon-color: #34d399;
+}
+
+[data-theme="dark"] .a2ui-stage[data-surface-id="november-budget"] {
+  --a2ui-card-box-shadow:
+    0 0 0 1px rgb(139 92 246 / 22%),
+    0 10px 30px -10px rgb(109 40 217 / 38%);
+}
+
+.a2ui-stage[data-surface-id="november-budget"] {
+  --a2ui-card-padding: 1rem;
+  --a2ui-card-border-radius: 12px;
+  --a2ui-card-box-shadow: none;
+  --a2ui-grid-base: 0.5rem;
+  --a2ui-button-padding: 0.375rem 0.75rem;
+  --a2ui-button-border-radius: 8px;
 }
